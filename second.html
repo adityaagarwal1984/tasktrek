@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech To-Do App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #333;
+            display: inline-block;
+            margin: 0;
+        }
+        .header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        ul {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Speech To-Do App</h1>
+    <ul id="taskList"></ul>
+    <button onclick="startRecognition()">Add/Delete Task by Speaking</button>
+
+    <script>
+        const taskList = document.getElementById('taskList');
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US';
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function startRecognition() {
+            recognition.start();
+            recognition.onresult = (event) => {
+                const command = event.results[0][0].transcript.toLowerCase();
+                if (command.startsWith('add')) {
+                    const task = command.replace('add', '').trim();
+                    if (task) {
+                        addTask(task);
+                        speak(`Task "${task}" added.`);
+                    }
+                } else if (command.startsWith('delete')) {
+                    const task = command.replace('delete', '').trim();
+                    if (task) {
+                        deleteTask(task);
+                    }
+                } else {
+                    speak('Command not recognized. Please say "add" or "delete" followed by the task name.');
+                }
+            };
+        }
+
+        function addTask(task) {
+            const li = document.createElement('li');
+            li.textContent = task;
+            taskList.appendChild(li);
+        }
+
+        function deleteTask(task) {
+            const items = taskList.getElementsByTagName('li');
+            let found = false;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].textContent.toLowerCase() === task.toLowerCase()) {
+                    taskList.removeChild(items[i]);
+                    speak(`Task "${task}" deleted.`);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                speak(`Task "${task}" not found.`);
+            }
+        }
+    </script>
+</body>
+</html>

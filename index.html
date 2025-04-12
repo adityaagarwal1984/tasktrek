@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do App with Voice Input</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+           background: white;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-image:linear-gradient(to right, #bc3441, #3625f5);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+           
+        }
+        h1 {
+            text-align: center;
+            color: #f3efef;
+        }
+        h2{
+            text-align: center;
+            color:goldenrod;
+        }
+        
+        .task-list {
+            list-style: none;
+            padding: 0;
+        }
+        .task-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 10px 0;
+            background: #e0e7ff;
+            border-radius: 5px;
+        }
+        .task-card.completed {
+            background: #d1fae5;
+            text-decoration: line-through;
+        }
+        .task-card button {
+            background:goldenrod;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .task-card button:hover {
+            background: #ff4d4d;
+        }
+        .mic-button {
+             position:relative;
+            bottom: 10px;
+            left: 260px;
+            width: 60px;
+            height: 60px;
+            background:goldenrod;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            font-size: 24px;
+        }
+        .mic-button i{
+            font-size: xx-large;
+        }
+        .mic-button:active {
+            background:red;
+            
+            }
+            .bx bxs-volume-full{
+                font-size: xx-large;
+            }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1>TaskBuddy</h1>
+        <h2> 🎤 to add/delete task and 🔊 to know the task</h2>
+        <ul class="task-list" id="taskList"></ul>
+    <button onclick="startRecognition()" class="mic-button" id="micButton"><i class='bx bxs-microphone'></i></button>
+
+    </div>
+
+    <script>
+        const taskList = document.getElementById('taskList');
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US';
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(utterance);
+        }
+        function speaking(button) {
+            const taskCard = button.parentElement;
+            const taskText = taskCard.querySelector('span').textContent;
+            speak(`${taskText}"`);
+        }
+
+        function startRecognition() {
+            recognition.start();
+            recognition.onresult = (event) => {
+                const command = event.results[0][0].transcript.toLowerCase();
+                if (command.startsWith('add')) {
+                    const task = command.replace('add', '').trim();
+                    if (task) {
+                        addTask(task);
+                        speak(`Task "${task}" added.`);
+                    }
+                } else if (command.startsWith('delete')) {
+                    const task = command.replace('delete', '').trim();
+                    if (task) {
+                        deleteTask(task);
+                    }
+                } else {
+                    speak('Command not recognized. Please say "add" or "delete" followed by the task name.');
+                }
+            };
+        }
+
+        // Function to add a task
+        function addTask(taskText) {
+            const taskCard = document.createElement('li');
+            taskCard.className = 'task-card';
+            taskCard.innerHTML = `
+                <span>${taskText}</span>
+                <button onclick="speaking(this)"><i class='bx bxs-volume-full'></i></button>
+                <button onclick="deleteTask(this)">Delete</button>
+            `;
+            // taskCard.addEventListener('click', () => {
+            //     taskCard.classList.toggle('completed');
+            // });
+            taskList.appendChild(taskCard);
+        }
+        // Function to delete a task
+        function deleteTask(button) {
+
+            const taskCard = button.parentElement;
+            const taskText = taskCard.querySelector('span').textContent;
+            
+            taskList.removeChild(taskCard);
+            speak(`Task "${taskText}" deleted.`);
+           
+
+        }
+
+        // function deleteTask(task) {
+        //     const items = taskList.getElementsByClassName('task-card').textContent;
+        //     let found = false;
+        //     for (let i = 0; i < items.length; i++) {
+        //         if (items[i].textContent.toLowerCase() === task.toLowerCase()) {
+        //             taskList.removeChild(items[i]);
+        //             speak(`Task "${task}" deleted.`);
+        //             found = true;
+        //             break;
+        //         }
+        //     }
+        //     if (!found) {
+        //         speak(`Task "${task}" not found.`);
+        //     }
+        // }
+    </script>
+</body>
+</html>
